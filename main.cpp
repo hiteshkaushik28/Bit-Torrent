@@ -13,8 +13,14 @@
 #include <iomanip>
 #include <vector>
 #include <sys/ioctl.h>
-#define __STDC_WANT_LIB_EXT1__ 1
+#include <stdio.h> 
+#include <sys/socket.h> 
+#include <stdlib.h> 
+#include <netinet/in.h> 
+#include <string.h> 
 
+#define PORT 8080 
+#define __STDC_WANT_LIB_EXT1__ 1
 using namespace std;
 #define CHUNKSIZE (512*1024)
 
