@@ -1,5 +1,0 @@
-[23:41:01] Log file creation successful
-[22:14:19] Log file creation successful
-[22:15:51] Client trying to initiate mtorrent share.
-[22:15:51] Torrent file creation successful.
-[23:18:16] Log file creation successful

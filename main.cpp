@@ -1,7 +1,7 @@
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 #include <openssl/sha.h>
 #include <iostream>
 #include <fstream>
@@ -17,12 +17,18 @@
 #include <sys/socket.h> 
 #include <stdlib.h> 
 #include <netinet/in.h> 
-#include <string.h> 
+#include <arpa/inet.h>
 
 #define PORT 8080 
 #define __STDC_WANT_LIB_EXT1__ 1
 using namespace std;
 #define CHUNKSIZE (512*1024)
+
+char *tok;
+vector<string> tokens;
+
+char input[100];
+char buffer[1024] = {0}; 
 
 fstream logfile,torrent;
 bool flag = false;
@@ -62,9 +68,14 @@ string get_time()
     return _retval;   
 }
 
+void share_torrent(string argument)
+{   
+    torrent<<argument<<"\n";
+}
+
+
 string file_read(const char *filename)
 {
-
     char hashchar[3] = "\0";
     unsigned char hash[20];
     unsigned char chunk[CHUNKSIZE];
@@ -84,6 +95,8 @@ string file_read(const char *filename)
     else
     {
         double size = input.tellg();
+        string str = to_string(size);
+        share_torrent(str);
         long int num = ceil(size/CHUNKSIZE);
         input.seekg(0,ios::beg);
         
@@ -108,13 +121,6 @@ string file_read(const char *filename)
 }
 
 
-void share_torrent(string argument)
-{   
-    
-    torrent<<argument<<"\n";
-
-}
-
 string makepath(char *path)
 {
     char *tok;
@@ -129,16 +135,50 @@ string makepath(char *path)
 
 }
 
+int create_connection()//string ip,int port)
+{
+    struct sockaddr_in address; 
+    int sock = 0, valread; 
+    struct sockaddr_in serv_addr; 
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+    { 
+        printf("\n socket creation error \n"); 
+        return -1; 
+    } 
+   
+    memset(&serv_addr, '0', sizeof(serv_addr)); 
+   
+    serv_addr.sin_family = AF_INET; 
+    serv_addr.sin_port = htons(8888); 
+       
+    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)  
+    { 
+        logfile<<get_time()<<"Invalid IP address \n"; 
+        return -1; 
+    } 
+   
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
+    { 
+        logfile<<get_time()<<" Connection attempt to tracker Failed \n"; 
+        return -1; 
+    } 
+    
+    else
+        return sock;
+
+}
+
+
 
 int main(int argc,char *argv[])
 {   
 
-    char *tok;
-    vector<string> tokens;
     string client(argv[1]);
     string tracker1(argv[2]);
     string tracker2(argv[3]);
-    char input[100];
+    vector<string>ip;
+    string hash;
+    char *hello = "Hello from client";
 
     logfile.open(argv[4],ios::out | ios::app);
 
@@ -160,11 +200,9 @@ int main(int argc,char *argv[])
             tok = strtok(NULL," ");
         }
 
-
         if(tokens[0] == "share")
         {   
-           
-            torrent.open(tokens[2].c_str(),ios::out | ios::app);
+           torrent.open(tokens[2].c_str(),ios::out | ios::app);
            
             if(!torrent)
             {
@@ -178,9 +216,39 @@ int main(int argc,char *argv[])
                 share_torrent(client);
                 share_torrent(tracker1);
                 share_torrent(tracker2);
+                share_torrent(tokens[1]);
+
                 //string path = makepath(tokens[1].c_str());
-                string hash = file_read((tokens[1]).c_str());
+                hash = file_read((tokens[1]).c_str());
                 share_torrent(hash);
+
+                int sock = create_connection();
+                if(sock < 0)
+                {
+                    cout<<"Connection attempt failed\n";
+                }
+                else
+                {
+                    tok = strtok(argv[1], ":");
+                    while(tok != NULL)
+                    {
+                        ip.push_back(tok);
+                        tok = strtok(NULL,":");
+                    }
+
+                    strcpy(hello,tokens[0].c_str());
+                    strcat(hello,"$");
+                    strcat(hello,ip[0].c_str());
+                    strcat(hello,"$");
+                    strcat(hello,ip[1].c_str());
+                    strcat(hello,"$");
+                    strcat(hello,hash.c_str());
+                    cout<<hello<<"\n";
+                    send(sock , hello , strlen(hello) , 0 ); 
+                    printf("meta data sent to tracker successfully\n");   
+                   
+                }
+
             }
             
         }

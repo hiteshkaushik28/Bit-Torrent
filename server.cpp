@@ -13,7 +13,7 @@
 #define FALSE  0  
 #define PORT 8888  
      
-int main(int argc , char *argv[])   
+int main()   
 {   
     int opt = TRUE;   
     int master_socket , addrlen , new_socket , client_socket[30] ,  
@@ -92,8 +92,7 @@ int main(int argc , char *argv[])
              
         if (FD_ISSET(master_socket, &readfds))   
         {   
-            if ((new_socket = accept(master_socket,  
-                    (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)   
+            if ((new_socket = accept(master_socket,(struct sockaddr *)&address, (socklen_t*)&addrlen))<0)   
             {   
                 perror("accept");   
                 exit(EXIT_FAILURE);   
