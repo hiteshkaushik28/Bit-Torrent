@@ -149,7 +149,7 @@ int create_connection()//string ip,int port)
     memset(&serv_addr, '0', sizeof(serv_addr)); 
    
     serv_addr.sin_family = AF_INET; 
-    serv_addr.sin_port = htons(8888); 
+    serv_addr.sin_port = htons(8880); 
        
     if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)  
     { 
@@ -176,9 +176,10 @@ int main(int argc,char *argv[])
     string client(argv[1]);
     string tracker1(argv[2]);
     string tracker2(argv[3]);
+    string delim = "$";
     vector<string>ip;
     string hash;
-    char *hello = "Hello from client";
+    char hello[1024];
 
     logfile.open(argv[4],ios::out | ios::app);
 
@@ -202,7 +203,7 @@ int main(int argc,char *argv[])
 
         if(tokens[0] == "share")
         {   
-           torrent.open(tokens[2].c_str(),ios::out | ios::app);
+            torrent.open(tokens[2].c_str(),ios::out | ios::app);
            
             if(!torrent)
             {
@@ -211,6 +212,7 @@ int main(int argc,char *argv[])
 
             else
             {
+              
                 logfile<<get_time()<<" Client trying to initiate mtorrent share.\n";
                 logfile<<get_time()<<" Torrent file creation successful.\n";
                 share_torrent(client);
@@ -229,20 +231,17 @@ int main(int argc,char *argv[])
                 }
                 else
                 {
-                    tok = strtok(argv[1], ":");
-                    while(tok != NULL)
-                    {
-                        ip.push_back(tok);
-                        tok = strtok(NULL,":");
-                    }
+                    size_t pos = client.find(':');
+                    ip.push_back(client.substr(0,pos));
+                    ip.push_back(client.substr(pos+1));
 
                     strcpy(hello,tokens[0].c_str());
-                    strcat(hello,"$");
-                    strcat(hello,ip[0].c_str());
-                    strcat(hello,"$");
-                    strcat(hello,ip[1].c_str());
-                    strcat(hello,"$");
-                    strcat(hello,hash.c_str());
+                    strcat(hello,(delim).c_str());
+                    strcat(hello,(ip[0]).c_str());
+                    strcat(hello,(delim).c_str());
+                    strcat(hello,(ip[1]).c_str());
+                    strcat(hello,(delim).c_str());
+                    strcat(hello,(hash).c_str());
                     cout<<hello<<"\n";
                     send(sock , hello , strlen(hello) , 0 ); 
                     printf("meta data sent to tracker successfully\n");   

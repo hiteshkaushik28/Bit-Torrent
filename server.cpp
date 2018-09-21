@@ -8,20 +8,18 @@
 #include <sys/socket.h>  
 #include <netinet/in.h>  
 #include <sys/time.h>  
-     
+
 #define TRUE   1  
 #define FALSE  0  
-#define PORT 8888  
+#define PORT 8880
      
-int main()   
+int main(int argc , char *argv[])   
 {   
     int opt = TRUE;   
-    int master_socket , addrlen , new_socket , client_socket[30] ,  
-          max_clients = 50 , activity, i , valread , sd;   
+    int master_socket , addrlen , new_socket , client_socket[50] ,  
+          max_clients = 5 , activity, i , valread , sd;   
     int max_sd;   
-    struct sockaddr_in address;   
-         
-    char buffer[1025];   
+    struct sockaddr_in address;     
   
     fd_set readfds;   
       
@@ -76,18 +74,20 @@ int main()
         {   
              sd = client_socket[i];   
                  
-        if(sd > 0)   
-            FD_SET( sd , &readfds);   
-                 
-        if(sd > max_sd)   
-            max_sd = sd;   
+            if(sd > 0)   
+                FD_SET( sd , &readfds);   
+                     
+            if(sd > max_sd)   
+                max_sd = sd;   
         }   
       
         activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);   
        
+       // printf("\nactivity no : %d\n",activity);
         if ((activity < 0) && (errno!=EINTR))   
         {   
-            printf("select error");   
+            perror("select error: ");
+            continue;  
         }   
              
         if (FD_ISSET(master_socket, &readfds))   
@@ -100,13 +100,14 @@ int main()
              
            printf("New connection , socket fd is %d , ip is : %s , port : %d \n" , new_socket , inet_ntoa(address.sin_addr) , ntohs(address.sin_port));   
            
+#if 0
             if( send(new_socket, message, strlen(message), 0) != strlen(message) )   
             {   
                 perror("send");   
             }   
                  
             puts("Welcome message sent successfully");   
-                 
+#endif             
             for (i = 0; i < max_clients; i++)   
             {   
             if( client_socket[i] == 0 )   
@@ -118,30 +119,32 @@ int main()
                 }   
             }   
         }   
-             
-        for (i = 0; i < max_clients; i++)   
-        {   
-            sd = client_socket[i];   
-                 
-            if (FD_ISSET( sd , &readfds))   
+        else
+        {
+            for (i = 0; i < max_clients; i++)   
             {   
-        
-                if ((valread = read( sd , buffer, 1024)) == 0)   
-                {   
-                    getpeername(sd , (struct sockaddr*)&address ,(socklen_t*)&addrlen);   
-                    printf("Host disconnected , ip %s , port %d \n" ,  
-                          inet_ntoa(address.sin_addr) , ntohs(address.sin_port));   
-                         
-                    close( sd );   
-                    client_socket[i] = 0;   
-                }   
+                sd = client_socket[i];   
                      
-                else 
-                {   
-                   buffer[valread] = '\0';   
-                   send(sd , buffer , strlen(buffer) , 0 );   
+                if (FD_ISSET( sd , &readfds))   
+                {     
+                    char buffer[1025]; 
+                    if ((valread = read( sd , buffer, 1024)) == 0)   
+                    {   
+                        getpeername(sd , (struct sockaddr*)&address ,(socklen_t*)&addrlen);   
+                        printf("Host disconnected , ip %s , port %d \n" ,  
+                              inet_ntoa(address.sin_addr) , ntohs(address.sin_port));   
+                             
+                        close( sd );  
+                        client_socket[i] = 0;   
+                    }   
+                    else 
+                    {   
+                       buffer[valread] = '\0';   
+                       printf("%s\n",buffer);
+                       fflush(stdout);
+                    }   
                 }   
-            }   
+            }
         }   
     }   
          
