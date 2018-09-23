@@ -18,6 +18,7 @@
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <arpa/inet.h>
+#include <string>
 
 #define PORT 8080 
 #define __STDC_WANT_LIB_EXT1__ 1
@@ -30,7 +31,7 @@ vector<string> tokens;
 char input[100];
 char buffer[1024] = {0}; 
 
-fstream logfile,torrent;
+fstream logfile,torrent,gettorrent,getfile;
 bool flag = false;
 struct winsize w;
 
@@ -68,11 +69,94 @@ string get_time()
     return _retval;   
 }
 
-void share_torrent(string argument)
+void create_mtorrent(string argument)
 {   
     torrent<<argument<<"\n";
 }
 
+string gethash()
+{
+    gettorrent.open(tokens[1].c_str(),ios::in);
+    string get;
+    if(!gettorrent)
+    {
+        logfile<<get_time()<<" Error opening mtorrent file for downloading\n";
+    }
+
+    else
+    {
+        logfile<<get_time()<<" opening mtorrent file for downloading\n";
+        for(int i = 0;i < 6;i++)
+        {
+            getline(gettorrent,get);
+        }
+        return get;
+    }
+}
+
+
+int create_connection(string ip,int port)
+{
+    struct sockaddr_in address; 
+    int sock = 0, valread; 
+    struct sockaddr_in serv_addr; 
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+    { 
+        printf("\n socket creation error \n"); 
+        return -1; 
+    } 
+   
+    memset(&serv_addr, '0', sizeof(serv_addr)); 
+   
+    serv_addr.sin_family = AF_INET; 
+    serv_addr.sin_port = htons(port); 
+       
+    if(inet_pton(AF_INET,ip.c_str(), &serv_addr.sin_addr)<=0)  
+    { 
+        logfile<<get_time()<<"Invalid IP address\n"; 
+        return -1; 
+    } 
+   
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
+    { 
+        logfile<<get_time()<<" Connection attempt to tracker Failed \n"; 
+        return -1; 
+    } 
+    
+    return sock;
+
+}
+
+/* Function to get seeders of the file */
+int file_get(string torrent)
+{
+    string ip;
+    int port;
+    gettorrent.open(torrent.c_str(),ios::in);
+    string get;
+    if(!gettorrent)
+    {
+        logfile<<get_time()<<" Error opening mtorrent file for downloading\n";
+        return -1;
+    }
+
+    else
+    {
+        logfile<<get_time()<<" Opening mtorrent file for downloading\n";
+        for(int i = 0;i < 2;i++) // skipping client ip
+        {
+            getline(gettorrent,get);
+        }
+        int pos = get.find(':');
+        ip = get.substr(0,pos); 
+        port = stoi(get.substr(pos+1));
+        gettorrent.close();
+        cout<<ip<<" "<<port<<"\n";
+        return create_connection(ip,port);
+
+    }
+
+}
 
 string file_read(const char *filename)
 {
@@ -96,7 +180,7 @@ string file_read(const char *filename)
     {
         double size = input.tellg();
         string str = to_string(size);
-        share_torrent(str);
+        create_mtorrent(str);
         long int num = ceil(size/CHUNKSIZE);
         input.seekg(0,ios::beg);
         
@@ -113,7 +197,6 @@ string file_read(const char *filename)
             }
             
         }
-
 
     }
 
@@ -132,42 +215,7 @@ string makepath(char *path)
         tok = strtok(NULL,"/");
     }
 
-
 }
-
-int create_connection()//string ip,int port)
-{
-    struct sockaddr_in address; 
-    int sock = 0, valread; 
-    struct sockaddr_in serv_addr; 
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
-    { 
-        printf("\n socket creation error \n"); 
-        return -1; 
-    } 
-   
-    memset(&serv_addr, '0', sizeof(serv_addr)); 
-   
-    serv_addr.sin_family = AF_INET; 
-    serv_addr.sin_port = htons(8880); 
-       
-    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)  
-    { 
-        logfile<<get_time()<<"Invalid IP address \n"; 
-        return -1; 
-    } 
-   
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
-    { 
-        logfile<<get_time()<<" Connection attempt to tracker Failed \n"; 
-        return -1; 
-    } 
-    
-    else
-        return sock;
-
-}
-
 
 
 int main(int argc,char *argv[])
@@ -193,7 +241,7 @@ int main(int argc,char *argv[])
         blank();
         command_prompt();   
         cin.getline(input,sizeof(input));
-
+        tokens.clear();
         tok = strtok(input, " ");
         while(tok != NULL)
         {
@@ -213,18 +261,18 @@ int main(int argc,char *argv[])
             else
             {
               
-                logfile<<get_time()<<" Client trying to initiate mtorrent share.\n";
+                logfile<<get_time()<<" Client trying to initiate share.\n";
                 logfile<<get_time()<<" Torrent file creation successful.\n";
-                share_torrent(client);
-                share_torrent(tracker1);
-                share_torrent(tracker2);
-                share_torrent(tokens[1]);
+                create_mtorrent(client);
+                create_mtorrent(tracker1);
+                create_mtorrent(tracker2);
+                create_mtorrent(tokens[1]);
 
                 //string path = makepath(tokens[1].c_str());
                 hash = file_read((tokens[1]).c_str());
-                share_torrent(hash);
+                create_mtorrent(hash);
 
-                int sock = create_connection();
+                int sock = create_connection("127.0.0.1",8880);
                 if(sock < 0)
                 {
                     cout<<"Connection attempt failed\n";
@@ -244,8 +292,9 @@ int main(int argc,char *argv[])
                     strcat(hello,(hash).c_str());
                     cout<<hello<<"\n";
                     send(sock , hello , strlen(hello) , 0 ); 
-                    printf("meta data sent to tracker successfully\n");   
-                   
+                    printf("Share request sent successfully\n");   
+                    close(sock);
+                 
                 }
 
             }
@@ -254,6 +303,28 @@ int main(int argc,char *argv[])
 
         else if(tokens[0] == "get")
         {
+            char buffer[1024];
+            int sock = file_get(tokens[1]);
+            if(sock < 0)
+            {
+                logfile<<get_time()<<" Connection attempt failed\n";
+            }
+            else
+            {
+                getfile.open(tokens[2].c_str(),ios::out);
+                string hash = gethash();
+                cout<<"\nhere i am"<<hash<<"\n";
+                strcpy(hello,tokens[0].c_str());
+                strcat(hello,(delim).c_str());
+                strcat(hello,hash.c_str());
+                send(sock , hello , strlen(hello) , 0 ); 
+                logfile<<get_time()<<" GET request sent to tracker successfully\n";   
+                int bytesread = read(sock, buffer,sizeof(buffer));
+                buffer[bytesread] = '\0';
+                string input = buffer;
+                cout<<bytesread<<"\n"<<input;
+                //printf("%s\n",buffer);
+            }
 
         }
 
@@ -264,10 +335,7 @@ int main(int argc,char *argv[])
             cin>>ch;
             exit(0);
         }
-
     }
-
-   
-             
+            
     return 0;
 }

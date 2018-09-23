@@ -8,24 +8,92 @@
 #include <sys/socket.h>  
 #include <netinet/in.h>  
 #include <sys/time.h>  
+#include <sys/stat.h>
+#include <bits/stdc++.h>
+#include <fstream>
+using namespace std;
 
 #define TRUE   1  
 #define FALSE  0  
 #define PORT 8880
-     
+ofstream seed;
+map<string,set<string > > seeder_list;
+vector<string>tokens;
+ map<string,set<string > > ::iterator itr;
+set<string>::iterator itr1;
+int max_sd;   
+
+string process_get(string input)
+{
+    string result="";
+    int pos = input.find('$');
+    string hash = input.substr(pos+1);
+    itr = seeder_list.find(hash);
+    for(itr1=itr->second.begin();itr1!=itr->second.end();itr1++)
+        result += *itr1 + ":";
+
+    result.pop_back();
+    return result;
+}
+
+/* Function to extract IP and PORT from client meta */
+string get_ip_port(string input)
+{
+    string temp;
+    int first,last;
+    first = input.find_first_of("$");
+    last = input.find_last_of("$");
+    temp = input.substr(first+1,last-first-1);
+    return temp;
+}
+
+/* Function to extract HASH from client meta */
+string get_hash(string input)
+{
+    int pos = input.find_last_of("$");
+    string hash = input.substr(pos+1);
+    return hash;
+}
+
+
+/* Update seeder list from backup file */
+void get_seeder_list(string file)
+{
+    struct stat buffer;
+    if(stat(file.c_str(),&buffer) == 0)
+    {
+        seed.open(file.c_str());
+        if(!seed)
+        {
+            cout<<"Error openin seed file\n";
+        }
+        else
+        {
+
+        }
+    }
+}
+
+  
 int main(int argc , char *argv[])   
 {   
+    /* Update seeder list at init */
+    string seed_file = argv[3];
+    get_seeder_list(seed_file);
+
+    char *tok;
+    
+    /* Listening to multiple clients using select() */
     int opt = TRUE;   
     int master_socket , addrlen , new_socket , client_socket[50] ,  
           max_clients = 5 , activity, i , valread , sd;   
-    int max_sd;   
+    
     struct sockaddr_in address;     
   
     fd_set readfds;   
       
-    char *message = "ECHO Daemon v1.0 \r\n";   
-     
-   for (i = 0; i < max_clients; i++)   
+    
+    for (i = 0; i < max_clients; i++)   
     {   
         client_socket[i] = 0;   
     }   
@@ -83,7 +151,6 @@ int main(int argc , char *argv[])
       
         activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);   
        
-       // printf("\nactivity no : %d\n",activity);
         if ((activity < 0) && (errno!=EINTR))   
         {   
             perror("select error: ");
@@ -99,26 +166,18 @@ int main(int argc , char *argv[])
             }   
              
            printf("New connection , socket fd is %d , ip is : %s , port : %d \n" , new_socket , inet_ntoa(address.sin_addr) , ntohs(address.sin_port));   
-           
-#if 0
-            if( send(new_socket, message, strlen(message), 0) != strlen(message) )   
-            {   
-                perror("send");   
-            }   
-                 
-            puts("Welcome message sent successfully");   
-#endif             
+            
             for (i = 0; i < max_clients; i++)   
             {   
             if( client_socket[i] == 0 )   
                 {   
                     client_socket[i] = new_socket;   
-                    printf("Adding to list of sockets as %d\n" , i);   
-                         
+                                            
                     break;   
                 }   
             }   
-        }   
+        } 
+
         else
         {
             for (i = 0; i < max_clients; i++)   
@@ -139,14 +198,31 @@ int main(int argc , char *argv[])
                     }   
                     else 
                     {   
-                       buffer[valread] = '\0';   
-                       printf("%s\n",buffer);
-                       fflush(stdout);
+                       buffer[valread] = '\0';
+                       string input(buffer);
+                                           
+                       if(input[0] == 's')
+                       {
+                            string hash = get_hash(input);
+                            string ip = get_ip_port(input);
+                            seeder_list[hash].insert(ip);
+                        }
+
+                        else 
+                        {
+                          string result =  process_get(input);
+                          send(sd , result.c_str() , strlen(result.c_str()) , 0 ); 
+                          cout<<"\nGET processed successfully successfully\n";   
+                          cout<<seeder_list.size();
+                        }
+                       
                     }   
                 }   
             }
         }   
     }   
+
+    /* Listen code ends here */
          
     return 0;   
 }   

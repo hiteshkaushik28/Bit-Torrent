@@ -1,0 +1,81 @@
+[05:15:40] Log file creation successful
+[05:15:53] Client trying to initiate share.
+[05:15:53] Torrent file creation successful.
+[05:16:21] Log file creation successful
+[05:16:30] Opening mtorrent file for downloading
+[05:16:30] opening mtorrent file for downloading
+[05:16:30] GET request sent to tracker successfully
+[05:19:12] Log file creation successful
+[05:19:33] Opening mtorrent file for downloading
+[05:19:33] opening mtorrent file for downloading
+[05:19:33] GET request sent to tracker successfully
+[05:19:53] Log file creation successful
+[05:20:00] Opening mtorrent file for downloading
+[05:20:00] opening mtorrent file for downloading
+[05:20:00] GET request sent to tracker successfully
+[05:20:37] Log file creation successful
+[05:20:50] Opening mtorrent file for downloading
+[05:20:50] opening mtorrent file for downloading
+[05:20:50] GET request sent to tracker successfully
+[05:23:59] Log file creation successful
+[05:24:17] Client trying to initiate share.
+[05:24:17] Torrent file creation successful.
+[05:24:17] error opening input file
+
+[05:24:28] Log file creation successful
+[05:24:36] Opening mtorrent file for downloading
+[05:24:36] opening mtorrent file for downloading
+[05:24:36] GET request sent to tracker successfully
+[05:24:58] Log file creation successful
+[05:25:04] Opening mtorrent file for downloading
+[05:25:04] opening mtorrent file for downloading
+[05:25:04] GET request sent to tracker successfully
+[05:25:22] Log file creation successful
+[05:25:30] Opening mtorrent file for downloading
+[05:25:30] opening mtorrent file for downloading
+[05:25:30] GET request sent to tracker successfully
+[05:25:55] Log file creation successful
+[05:26:03] Opening mtorrent file for downloading
+[05:26:03] opening mtorrent file for downloading
+[05:26:03] GET request sent to tracker successfully
+[05:26:43] Log file creation successful
+[05:26:50] Opening mtorrent file for downloading
+[05:26:50] opening mtorrent file for downloading
+[05:26:50] GET request sent to tracker successfully
+[05:26:59] Log file creation successful
+[05:27:05] Opening mtorrent file for downloading
+[05:27:05] opening mtorrent file for downloading
+[05:27:05] GET request sent to tracker successfully
+[05:27:23] Log file creation successful
+[05:27:33] Opening mtorrent file for downloading
+[05:27:33] opening mtorrent file for downloading
+[05:27:33] GET request sent to tracker successfully
+[05:28:01] Log file creation successful
+[05:28:11] Opening mtorrent file for downloading
+[05:28:11] opening mtorrent file for downloading
+[05:28:11] GET request sent to tracker successfully
+[05:28:59] Log file creation successful
+[05:29:06] Opening mtorrent file for downloading
+[05:29:06] opening mtorrent file for downloading
+[05:29:06] GET request sent to tracker successfully
+[05:29:34] Log file creation successful
+[05:29:42] Opening mtorrent file for downloading
+[05:29:42] opening mtorrent file for downloading
+[05:29:42] GET request sent to tracker successfully
+[05:31:24] Log file creation successful
+[05:31:44] Client trying to initiate share.
+[05:31:44] Torrent file creation successful.
+[05:32:05] Log file creation successful
+[05:32:15] Client trying to initiate share.
+[05:32:15] Torrent file creation successful.
+[05:33:04] Log file creation successful
+[05:33:25] Opening mtorrent file for downloading
+[05:33:25] opening mtorrent file for downloading
+[05:33:25] GET request sent to tracker successfully
+[05:37:11] Log file creation successful
+[05:37:24] Client trying to initiate share.
+[05:37:24] Torrent file creation successful.
+[05:37:24] Connection attempt to tracker Failed 
+[05:37:34] Log file creation successful
+[05:37:41] Client trying to initiate share.
+[05:37:41] Torrent file creation successful.
