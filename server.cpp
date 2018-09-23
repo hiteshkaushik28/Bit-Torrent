@@ -210,6 +210,7 @@ int main(int argc , char *argv[])
 
                         else 
                         {
+                            cout<<"get here";
                           string result =  process_get(input);
                           send(sd , result.c_str() , strlen(result.c_str()) , 0 ); 
                           cout<<"\nGET processed successfully successfully\n";   

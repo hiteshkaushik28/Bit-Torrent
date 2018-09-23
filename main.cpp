@@ -19,13 +19,9 @@
 #include <netinet/in.h> 
 #include <arpa/inet.h>
 #include <string>
-#include <thread>
 #include <bits/stdc++.h>
 using namespace std;
 
-#define TRUE   1  
-#define FALSE  0
-#define PORT 8080 
 #define __STDC_WANT_LIB_EXT1__ 1
 
 #define CHUNKSIZE (512*1024)
@@ -41,10 +37,6 @@ fstream logfile,torrent,gettorrent,getfile;
 bool flag = false;
 struct winsize w;
 
-map<string,string>id_peer;
-
-
-
 string get_time()
 {
     time_t rawtime;
@@ -58,138 +50,6 @@ string get_time()
     strftime(_retval, sizeof(_retval),"[%H:%M:%S]", timeinfo);
     
     return _retval;   
-}
-
-void client_listener(string ip_port)
-{
-    //string ip = ip_port.substr(0,ip_port.find(':'));
-    int port = stoi(ip_port.substr(ip_port.find(':')+1));
-    int opt = TRUE;   
-    int master_socket , addrlen , new_socket , client_socket[30] ,max_clients = 30 , activity, i , valread , sd;   
-    int max_sd;   
-    struct sockaddr_in address;   
-         
-    char buffer[1025];
-         
-    fd_set readfds;    
-      
-    for (i = 0; i < max_clients; i++)   
-    {   
-        client_socket[i] = 0;   
-    }   
-         
-    if( (master_socket = socket(AF_INET , SOCK_STREAM , 0)) == 0)   
-    {   
-        perror("socket failed");   
-        exit(EXIT_FAILURE);   
-    }   
-     
-    if( setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt,  
-          sizeof(opt)) < 0 )   
-    {   
-        perror("setsockopt");   
-        exit(EXIT_FAILURE);   
-    }   
-     
-    address.sin_family = AF_INET;   
-    address.sin_addr.s_addr = INADDR_ANY;   
-    address.sin_port = htons( port );   
-         
-    if (bind(master_socket, (struct sockaddr *)&address, sizeof(address))<0)   
-    {   
-        perror("bind failed");   
-        exit(EXIT_FAILURE);   
-    }
-
-    logfile<<get_time()<<" Client Listening on port:";
-    logfile<<port;
-    logfile<<"\n";   
-         
-    if (listen(master_socket, 3) < 0)   
-    {   
-        perror("listen");   
-        exit(EXIT_FAILURE);   
-    }   
-         
-    addrlen = sizeof(address);   
-    logfile<<get_time()<<" Client Waiting for connections ...\n";   
-         
-    while(TRUE)   
-    {   
-        FD_ZERO(&readfds);   
-        FD_SET(master_socket, &readfds);   
-        max_sd = master_socket;   
-             
-        for ( i = 0 ; i < max_clients ; i++)   
-        {   
-        sd = client_socket[i];   
-                 
-        if(sd > 0)   
-            FD_SET( sd , &readfds);   
-                 
-        if(sd > max_sd)   
-            max_sd = sd;   
-        }   
-     
-        activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);   
-       
-        if ((activity < 0) && (errno!=EINTR))   
-        {   
-            logfile<<get_time()<<" select error:\n";   
-        }   
-             
-        if (FD_ISSET(master_socket, &readfds))   
-        {   
-            if ((new_socket = accept(master_socket,  
-                    (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)   
-            {   
-                perror("accept");   
-                exit(EXIT_FAILURE);   
-            }   
-             
-            logfile<<get_time()<<" New connection , socket fd is:"<<new_socket<<", ip is:"<<inet_ntoa(address.sin_addr)<<", port:"<<ntohs(address.sin_port)<<"\n";   
-                   
-            for (i = 0; i < max_clients; i++)   
-            {   
-            if( client_socket[i] == 0 )   
-                {   
-                    client_socket[i] = new_socket;   
-                    logfile<<get_time()<<" Adding to list of sockets as: "<<i<<"\n";   
-                    break;   
-                }   
-            }   
-        }   
-             
-        for (i = 0; i < max_clients; i++)   
-        {   
-            sd = client_socket[i];   
-                 
-            if (FD_ISSET( sd , &readfds))   
-            {
-
-            char getinput[1025]; 
-            if ((valread = read( sd , getinput, 1024)) == 0)   
-            {   
-                getpeername(sd , (struct sockaddr*)&address ,(socklen_t*)&addrlen);   
-                printf("Host disconnected , ip %s , port %d \n" ,inet_ntoa(address.sin_addr) , ntohs(address.sin_port));   
-                         
-                close( sd );   
-                client_socket[i] = 0;   
-                }   
-                     
-                else 
-                {   
-                    getinput[valread] = '\0';   
-                    string input(getinput);
-
-                    if(input[0] == 'i')
-                    {
-                        //process_id_request(input);
-                    }
-                }   
-            }   
-        }   
-    }   
 }
 
 void blank()
@@ -387,8 +247,6 @@ int main(int argc,char *argv[])
     string hash;
     char hello[1024];
 
-    thread listener(client_listener,client);
-
     logfile.open(argv[4],ios::out | ios::app);
 
     if(!logfile)
@@ -485,21 +343,18 @@ int main(int argc,char *argv[])
                 tok = strtok(NULL,":");
             }
 
-            for(int i = 0;i<tracker_tokens.size();i+=2)
-            {
-                download(tracker_tokens[i],stoi(tracker_tokens[i+1]));
-            }
-        }
+          }
     }
 
-    else if(tokens[0] == "exit")
+
+    else 
     {
         char ch;
         cout<<"\nClient Exiting!!! Press any key to continue ";
         cin>>ch;
         exit(0);
     }  
- }           
 
+}
 return 0;
 }

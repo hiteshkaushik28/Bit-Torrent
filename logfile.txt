@@ -38,3 +38,8 @@
 [22:44:14] Opening mtorrent file for downloading
 [22:44:14] opening mtorrent file for downloading
 [22:44:14] GET request sent to tracker successfully
+[23:22:33] Log file creation successful
+[23:22:44] Log file creation successful
+[23:29:34] Log file creation successful
+[23:29:42] Client trying to initiate share.
+[23:29:42] Torrent file creation successful.
