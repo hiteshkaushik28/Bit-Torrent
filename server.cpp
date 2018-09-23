@@ -19,14 +19,14 @@ using namespace std;
 ofstream seed;
 map<string,set<string > > seeder_list;
 vector<string>tokens;
- map<string,set<string > > ::iterator itr;
+    map<string,set<string > > ::iterator itr;
 set<string>::iterator itr1;
 int max_sd;   
 
 string process_get(string input)
 {
     string result="";
-    int pos = input.find('$');
+    int pos = input.find(':');
     string hash = input.substr(pos+1);
     itr = seeder_list.find(hash);
     for(itr1=itr->second.begin();itr1!=itr->second.end();itr1++)
@@ -41,8 +41,8 @@ string get_ip_port(string input)
 {
     string temp;
     int first,last;
-    first = input.find_first_of("$");
-    last = input.find_last_of("$");
+    first = input.find_first_of(":");
+    last = input.find_last_of(":");
     temp = input.substr(first+1,last-first-1);
     return temp;
 }
@@ -50,7 +50,7 @@ string get_ip_port(string input)
 /* Function to extract HASH from client meta */
 string get_hash(string input)
 {
-    int pos = input.find_last_of("$");
+    int pos = input.find_last_of(":");
     string hash = input.substr(pos+1);
     return hash;
 }
@@ -213,7 +213,6 @@ int main(int argc , char *argv[])
                           string result =  process_get(input);
                           send(sd , result.c_str() , strlen(result.c_str()) , 0 ); 
                           cout<<"\nGET processed successfully successfully\n";   
-                          cout<<seeder_list.size();
                         }
                        
                     }   
